@@ -1,0 +1,25 @@
+{
+  "name": "inav-web-gcs",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/w3c-web-serial": "^1.0.8",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "leaflet": "^1.9.4",
+    "leaflet-polylinedecorator": "^1.6.0"
+  }
+}
