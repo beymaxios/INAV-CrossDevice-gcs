@@ -1,9 +1,19 @@
-![INAV GCS Banner](./screenshots/banner.png)
+<p align="center">
+  <img src="./screenshots/banner.png" width="100%">
+</p>
+<p align="center">
 
+![Firmware](https://img.shields.io/badge/Firmware-INAV-blue)
+![Platform](https://img.shields.io/badge/Platform-Cross--Platform-green)
+![Telemetry](https://img.shields.io/badge/Telemetry-LoRa-purple)
+![Language](https://img.shields.io/badge/Language-TypeScript-yellow)
+![Build](https://img.shields.io/badge/Desktop-Tauri-orange)
+![Android](https://img.shields.io/badge/Android-Capacitor-brightgreen)
+
+</p>
 
 # INAV GCS
-Lightweight Cross-Platform Ground Control Station for INAV Flight Controllers
-Lightweight Cross-Platform Ground Control Station for **INAV Flight Controllers**
+Lightweight Cross-Platform Ground Control Station for **INAV Firmware**
 
 INAV Web GCS is a lightweight cross-platform **Ground Control Station (GCS)** for INAV flight controllers.
 
