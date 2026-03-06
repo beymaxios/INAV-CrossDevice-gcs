@@ -1,5 +1,5 @@
 import { parseMSPStream } from '../core/mspParser'
-import { buildMSP } from '../core/msp'
+import { sendMSP } from '../core/mspSender'
 import { logMessage } from '../ui/logUI'
 import {
   pollCycle,
@@ -24,18 +24,65 @@ let telemetryTimer: number | null = null
 
 export async function connectSerial() {
 
-  if (!("serial" in navigator)) {
-    alert("WebSerial not supported in this browser.")
+  const AndroidUSB = (window as any).AndroidUSB
+
+  /* ------------------------------
+     Desktop (WebSerial)
+  ------------------------------ */
+
+  if ("serial" in navigator) {
+    return connectWebSerial()
+  }
+
+  /* ------------------------------
+     Android native USB bridge
+  ------------------------------ */
+
+  if (AndroidUSB) {
+
+    logMessage("Using Android USB")
+
+    try {
+   
+          const ok = AndroidUSB.connect()
+
+      if (!ok) {
+        logMessage("USB permission or device not ready", "error")
+        return
+      }
+
+      isConnected = true
+
+      startPolling()
+      sendMSP(1)
+
+    } catch (err) {
+
+      console.error(err)
+      logMessage("Android USB connection failed", "error")
+    }
+
     return
   }
+
+  alert("USB not supported on this platform.")
+}
+
+/* =========================================================
+   WEB SERIAL (Desktop)
+========================================================= */
+
+async function connectWebSerial() {
 
   try {
 
     port = await (navigator as any).serial.requestPort()
+
     if (!port) {
       logMessage("Failed to request serial port", "error")
       return
     }
+
     await port.open({ baudRate: 115200 })
 
     reader = port.readable?.getReader() ?? null
@@ -43,22 +90,25 @@ export async function connectSerial() {
 
     isConnected = true
 
-    logMessage("Serial connected")
+    logMessage("USB connected")
 
     startReading()
     startPolling()
 
-    // Handshake
+    // MSP handshake
     sendMSP(1)
 
   } catch (err) {
+
     console.error(err)
     logMessage("Serial connection failed", "error")
     disconnectSerial()
   }
 }
 
-/* ========================================================= */
+/* =========================================================
+   DISCONNECT
+========================================================= */
 
 export async function disconnectSerial() {
 
@@ -80,41 +130,42 @@ export async function disconnectSerial() {
   port = null
 
   logMessage("Serial disconnected")
+
   resetTelemetryState()
   resetTelemetryUI()
 }
 
-/* ========================================================= */
+/* =========================================================
+   READ SERIAL DATA
+========================================================= */
 
 async function startReading() {
 
   if (!reader) return
 
   try {
+
     while (isConnected) {
 
       const { value, done } = await reader.read()
+
       if (done) break
+
       if (value) parseMSPStream(value)
     }
+
   } catch (err) {
+
     console.error(err)
   }
 
   disconnectSerial()
 }
 
-/* ========================================================= */
 
-function sendMSP(command: number, payload: number[] = []) {
-
-  if (!writer) return
-
-  const packet = buildMSP(command, payload)
-  writer.write(packet)
-}
-
-/* ========================================================= */
+/* =========================================================
+   TELEMETRY POLLING
+========================================================= */
 
 function startPolling() {
 
@@ -123,12 +174,29 @@ function startPolling() {
     if (!isConnected) return
 
     switch (pollCycle % 6) {
-      case 0: sendMSP(121); break
-      case 1: sendMSP(110); break
-      case 2: sendMSP(106); break
-      case 3: sendMSP(101); break
-      case 4: sendMSP(105); break
-     case 5:
+
+      case 0:
+        sendMSP(121)
+        sendMSP(108)
+        break
+
+      case 1:
+        sendMSP(110)
+        break
+
+      case 2:
+        sendMSP(106)
+        break
+
+      case 3:
+        sendMSP(101)
+        break
+
+      case 4:
+        sendMSP(105)
+        break
+
+      case 5:
         setLoraSendTime(performance.now())
         sendMSP(150)
         break
@@ -142,11 +210,29 @@ function startPolling() {
   loop()
 }
 
-
+/* =========================================================
+   TRANSPORT EXPORT
+========================================================= */
 export const serialTransport = {
+
   connect: connectSerial,
+
   disconnect: disconnectSerial,
+
   send: (data: Uint8Array) => {
-    if (writer) writer.write(data)
+
+    const AndroidUSB = (window as any).AndroidUSB
+
+    /* Desktop WebSerial */
+    if (writer) {
+      writer.write(data)
+      return
+    }
+
+    /* Android native USB */
+    if (AndroidUSB && typeof AndroidUSB.write === "function") {
+      AndroidUSB.write(Array.from(data))
+      return
+    }
   }
 }

@@ -1,4 +1,5 @@
-import { quadMarker } from '../mission/missionState'
+import { updateQuadPosition} from '../mission/missionMap'
+import { setQuadStatus } from '../mission/missionMap'
 
 /* =========================
    BASIC UI HELPERS
@@ -68,6 +69,7 @@ export function updateArmedStatus(isArmed: boolean) {
     el.innerText = "DISARMED"
     el.style.color = "#22c55e"
   }
+   setQuadStatus(isArmed)
 }
 
 /* =========================
@@ -132,7 +134,8 @@ export function updateGpsOverlay(
   speed: number,
   fixType: number,
   sat: number,
-  hdop: number
+  hdop: number,
+  headingFromState: number
 ) {
 
   setText("gps-lat", lat.toFixed(6))
@@ -141,7 +144,7 @@ export function updateGpsOverlay(
   setText("gps-speed", speed + " m/s")
   setText("stat-sat", sat.toString())
   setText("stat-hdop", hdop.toFixed(1))
-
+  setText("stat-heading", headingFromState.toFixed(1) + "°")
   const fixText =
     fixType === 2 ? "3D FIX" :
     fixType === 1 ? "2D FIX" :
@@ -152,6 +155,7 @@ export function updateGpsOverlay(
 
     if (fixType === 2) {
       fixEl.style.color = "#22c55e"
+       updateQuadPosition(lat, lon, headingFromState)
     } else if (fixType === 1) {
       fixEl.style.color = "#f59e0b"
     } else {
@@ -218,22 +222,6 @@ export function updateHomeArrow(
   }
 }
 
-/* =========================
-   QUAD ROTATION
-========================= */
-
-export function updateQuadRotation(heading: number) {
-
-  if (!quadMarker) return
-
-  const el = quadMarker.getElement()
-  if (!el) return
-
-  const img = el.querySelector(".quad-icon") as HTMLElement
-  if (!img) return
-
-  img.style.transform = `rotate(${heading}deg)`
-}
 
 
 export function resetTelemetryUI() {
@@ -256,8 +244,4 @@ export function resetTelemetryUI() {
     modeEl.style.color = "#94a3b8"
   }
 
-  const fsEl = document.getElementById("stat-failsafe")
-  if (fsEl) {
-    fsEl.innerText = "OK"
-  }
 }

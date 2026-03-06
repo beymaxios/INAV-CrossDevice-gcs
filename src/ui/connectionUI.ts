@@ -1,7 +1,8 @@
 import { serialTransport } from '../transport/serialTransport'
 import { websocketTransport } from '../transport/websocketTransport'
 import { resetTelemetry } from './telemetryUI'
-
+import { setActiveTransport } from '../transport/transportManager'
+import { setFcButtonsEnabled } from './layout'
 /* =========================================================
    CONNECTION UI
 ========================================================= */
@@ -39,6 +40,7 @@ export function initConnectionUI() {
         await activeTransport.connect()
         isConnected = true
         updateButton(true)
+        setActiveTransport(activeTransport) 
       } catch (err) {
         console.error(err)
       }
@@ -63,7 +65,7 @@ function updateButton(state: boolean) {
   if (!status || !button) return
 
   if (state) {
-
+    setFcButtonsEnabled(true)
     status.classList.remove("disconnected")
     status.classList.add("connected")
 
@@ -71,7 +73,7 @@ function updateButton(state: boolean) {
     button.innerHTML = `<i class="fa-solid fa-plug-circle-xmark"></i>`
 
   } else {
-
+    setFcButtonsEnabled(false)
     status.classList.remove("connected")
     status.classList.add("disconnected")
 

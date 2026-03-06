@@ -7,10 +7,41 @@ import { mission, markers, polyline, setPolyline } from './missionState'
 
 /* ========================================================= */
 
-export const homeLatLng = L.latLng(23.0645, 70.1189)
-
 export let map: L.Map
 
+const trailCoords: L.LatLngExpression[] = []
+let trailLine: L.Polyline | null = null
+let quadMarker: L.Marker | null = null
+export let quadHeading: number = 0
+let homeMarker: L.Marker | null = null
+
+
+let smoothLat = 0
+let smoothLon = 0
+let smoothInitialized = false
+
+
+ const homeIcon = L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        width:36px;
+        height:36px;
+        background:#00bfff;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:2px solid white;
+      ">
+        <i class="fa-solid fa-house"
+           style="color:white;font-size:16px;">
+        </i>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18]
+  })
 /* =========================================================
    INIT MAP
 ========================================================= */
@@ -48,33 +79,19 @@ export function initMap() {
     { position: "topleft" }
   ).addTo(map)
 
+  trailLine = L.polyline([], {
+    color: '#2248c5',
+    weight: 3,
+    opacity: 0.9
+  }).addTo(map)
+
+  
   /* ================= HOME MARKER ================= */
 
-  const homeIcon = L.divIcon({
-    className: '',
-    html: `
-      <div style="
-        width:36px;
-        height:36px;
-        background:#00bfff;
-        border-radius:50%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        border:2px solid white;
-      ">
-        <i class="fa-solid fa-house"
-           style="color:white;font-size:16px;">
-        </i>
-      </div>
-    `,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18]
-  })
-
-  L.marker(homeLatLng, { icon: homeIcon })
-    .addTo(map)
-    .bindPopup("HOME")
+    window.addEventListener("home-set", (e: any) => {
+      const { lat, lon } = e.detail
+      setHomeMarker(lat, lon)
+    })
 }
 
 export function createIcon(item: MissionItem): L.DivIcon {
@@ -137,6 +154,127 @@ export function createIcon(item: MissionItem): L.DivIcon {
     iconAnchor: [17, 17]
   })
 }
+function createQuadIcon(): L.DivIcon {
+
+  return L.divIcon({
+    className: '',
+    html: `
+      <div id="quad-wrapper" class="quad-icon" style="
+        width:52px;
+        height:52px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        transition: transform 0.1s linear;
+      ">
+        <img src="/quad.png"
+             style="
+               width:48px;
+               height:48px;
+               pointer-events:none;
+               filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6))
+               drop-shadow(0 0 8px rgba(59,130,246,0.5));
+             " />
+      </div>
+    `,
+    iconSize: [52, 52],
+    iconAnchor: [26, 26]
+  })
+}
+
+export function setQuadStatus(isArmed: boolean,) {
+
+  const wrapper = document.getElementById("quad-wrapper")
+  if (!wrapper) return
+
+  wrapper.classList.remove("quad-armed")
+  wrapper.classList.remove("quad-failsafe")
+ 
+  if (isArmed) {
+    wrapper.classList.add("quad-armed")
+  }
+}
+
+export function setHomeMarker(lat: number, lon: number) {
+
+  if (!map) return
+
+  if (!homeMarker) {
+
+    homeMarker = L.marker([lat, lon], {
+      icon: homeIcon,
+      zIndexOffset: 900
+    })
+      .addTo(map)
+      .bindPopup("HOME")
+
+       map.flyTo([lat, lon], 16)
+       homeMarker.openPopup()
+       setTimeout(() => {
+        homeMarker?.closePopup()
+      }, 3000)
+
+  } else {
+    homeMarker.setLatLng([lat, lon])
+  }
+
+}
+
+export function resetHomeMarker() {
+
+  if (homeMarker) {
+    map.removeLayer(homeMarker)
+    homeMarker = null
+
+  }
+  
+}
+
+export function updateQuadPosition(lat: number, lon: number,heading: number) {
+
+  if (!map) return
+
+  /* Initialize smoothing */
+  if (!smoothInitialized) {
+    smoothLat = lat
+    smoothLon = lon
+    smoothInitialized = true
+  }
+
+  /* ===== GPS SMOOTHING ===== */
+
+  const factor = 0.25
+
+  smoothLat += (lat - smoothLat) * factor
+  smoothLon += (lon - smoothLon) * factor
+
+  /* ========================= */
+
+  if (!quadMarker) {
+
+    quadMarker = L.marker([smoothLat, smoothLon], {
+      icon: createQuadIcon(),
+      zIndexOffset: 1000
+    }).addTo(map)
+
+  } else {
+
+    quadMarker.setLatLng([smoothLat, smoothLon])
+
+  }
+
+  quadHeading = heading
+  rotateQuad()
+}
+
+function rotateQuad() {
+
+  const wrapper = document.getElementById("quad-wrapper")
+
+  if (wrapper) {
+    wrapper.style.transform = `rotate(${quadHeading}deg)`
+  }
+}
 
 export function addMarker(item: MissionItem) {
 
@@ -154,6 +292,23 @@ export function addMarker(item: MissionItem) {
 
   markers.push(marker)
 }
+
+export function clearAllMarkers() {
+
+  markers.forEach(marker => {
+    map.removeLayer(marker)
+  })
+
+  markers.length = 0
+}
+
+export function clearPolyline() {
+  if (polyline) {
+    polyline.remove()
+    setPolyline(null)
+  }
+}
+
 export function updatePolyline() {
 
   if (polyline) {
@@ -174,9 +329,22 @@ export function updatePolyline() {
   }
 }
 
+export function updateLiveTrail(lat: number, lon: number) {
+  if (!trailLine) return
+
+  trailCoords.push([lat, lon])
+
+  if (trailCoords.length > 500) {
+    trailCoords.shift()
+  }
+
+  trailLine.setLatLngs(trailCoords)
+}
+
 export function enableMapClick(handler: (lat: number, lon: number) => void) {
 
   map.on('click', (e) => {
     handler(e.latlng.lat, e.latlng.lng)
   })
 }
+

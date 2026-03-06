@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+   "build:desktop": "vite build",
+   "build:esp32": "vite build --config vite.esp32.config.ts",
+   "build:android": "vite build --config vite.android.config.ts"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
     "@types/leaflet": "^1.9.21",
     "@types/w3c-web-serial": "^1.0.8",
     "typescript": "~5.9.3",

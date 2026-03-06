@@ -25,7 +25,7 @@ export function buildMSP(command: number, payload: number[] = []): Uint8Array {
   }
 
   buffer[5 + size] = checksum
-
+ 
   return buffer
 }
 
@@ -59,9 +59,11 @@ export function buildMSPv2(command: number, payload: number[] = []): Uint8Array 
   return buffer
 }
 
+
 /* =========================================================
    CRC8 DVB-S2
 ========================================================= */
+
 
 function crc8DvbS2(data: number[]): number {
 

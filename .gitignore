@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+distAndroid
+android/app/build
+android/build
+android/.gradle
+android/local.properties
+.vscode
+.DS_Store

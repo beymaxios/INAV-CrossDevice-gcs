@@ -107,6 +107,7 @@ function startPolling() {
 
       case 0:
         sendMSP(121)
+        sendMSP(108);
         break
 
       case 1:
@@ -135,7 +136,7 @@ function startPolling() {
 
     incrementPollCycle()
 
-    telemetryTimer = window.setTimeout(loop, 100)
+    telemetryTimer = window.setTimeout(loop, 250)
   }
 
   loop()

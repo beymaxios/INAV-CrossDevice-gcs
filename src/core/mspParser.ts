@@ -1,5 +1,5 @@
 import { logMessage } from '../ui/logUI'
-
+import { isFetching } from '../mission/missionMSP'
 import {
   setNavMode,
   setAngleMode,
@@ -13,7 +13,8 @@ import {
   homeLat,
   homeLon,
   loraSendTime,
-  loraAvgLatency
+  loraAvgLatency,
+  currentHeading
 } from './telemetryState'
 
 import {
@@ -23,12 +24,13 @@ import {
   updateLoraIndicator,
   updateDistanceToHome,
   updateHomeArrow,
-  updateQuadRotation,
   setText,
   showFooterMessage,
   hideFooter
 } from '../ui/telemetryUI'
-
+import { updateLiveTrail } from '../mission/missionMap'
+import { sendMSP } from './mspSender'
+import { handleMissionMSP } from '../mission/missionMSP'
 /* =========================================================
    MSP STREAM PARSER
 ========================================================= */
@@ -114,12 +116,17 @@ export function parseMSPStream(data: Uint8Array) {
 ========================================================= */
 
 function handleMSPResponse(cmd: number, payload: number[]) {
-
+    handleMissionMSP(cmd, payload)
   /* ================= API VERSION ================= */
 
   if (cmd === 1 && payload.length >= 3) {
     logMessage(`INAV API ${payload[0]}.${payload[1]}.${payload[2]}`)
   }
+  
+ if (cmd === 18 && isFetching) {
+ 
+  sendMSP(20, [0]) // MSP_WP_GETINFO
+}
 
   /* ================= HEADING ================= */
 
@@ -127,10 +134,13 @@ function handleMSPResponse(cmd: number, payload: number[]) {
 
     const yawRaw = payload[4] | (payload[5] << 8)
     const yaw = yawRaw > 32767 ? yawRaw - 65536 : yawRaw
-
-    const heading = yaw / 10
+    
+    let heading = yaw 
+    if (heading < 0) heading += 360
+    console.log("MSP108 RECEIVED OVER WS: HEADING =", heading);
     setHeading(heading)
-    updateQuadRotation(heading)
+   
+   
   }
 
   /* ================= BATTERY ================= */
@@ -150,9 +160,12 @@ function handleMSPResponse(cmd: number, payload: number[]) {
 
   if (cmd === 121 && payload.length >= 1) {
     setNavMode(payload[0])
-    updateFlightModeDisplay(currentNavMode, currentIsAngle)
+    refreshFlightModeUI(currentNavMode, currentIsAngle)
   }
 
+  function refreshFlightModeUI(navMode: number, isAngle: boolean) {
+  updateFlightModeDisplay(navMode, isAngle)
+}
   /* ================= STATUS EX (LORA RTT + ARM BLOCKS) ================= */
 
   if (cmd === 150 && payload.length >= 13) {
@@ -209,10 +222,11 @@ function handleMSPResponse(cmd: number, payload: number[]) {
     const speed = (speedRaw > 32767 ? speedRaw - 65536 : speedRaw) / 100
 
     const hdop = (payload[16] | (payload[17] << 8)) / 100
-
+     
+    if (  fixType >= 2 &&  lat !== 0 && lon !== 0 && currentIsArmed ) {  updateLiveTrail(lat, lon)}
+    
     setGpsData(lat, lon, alt / 100, speed, numSat, hdop)
-
-    updateGpsOverlay(lat, lon, alt / 100, speed, fixType, numSat, hdop)
+    updateGpsOverlay(lat, lon, alt / 100, speed, fixType, numSat, hdop, currentHeading)
     updateDistanceToHome(lat, lon, homeLat, homeLon)
     updateHomeArrow(lat, lon, homeLat, homeLon)
   }
@@ -236,7 +250,9 @@ function handleMSPResponse(cmd: number, payload: number[]) {
     setAngleMode(angle)
 
     updateArmedStatus(armed)
-    updateFlightModeDisplay(currentNavMode, angle)
+    refreshFlightModeUI(currentNavMode, angle)
+
+     
 
     if (armed) {
       hideFooter()

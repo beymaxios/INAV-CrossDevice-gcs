@@ -22,9 +22,24 @@ export let currentSpeed = 0
 export let currentSat = 0
 export let currentHdop = 0
 
-export let homeLat = 23.0645
-export let homeLon = 70.1189
+export let homeLat = 0
+export let homeLon = 0
+export let homeSet = false
 
+export function setHome(lat: number, lon: number) {
+
+  if (homeSet) return
+
+  homeLat = lat
+  homeLon = lon
+  homeSet = true
+
+  /* Notify map */
+  window.dispatchEvent(new CustomEvent("home-set", {
+    detail: { lat, lon }
+  }))
+
+}
 /* =========================
    HEADING
 ========================= */
@@ -68,6 +83,9 @@ export function setAngleMode(state: boolean) {
 
 export function setArmed(state: boolean) {
   currentIsArmed = state
+   if (!state) {
+    homeSet = false
+  }
 }
 
 export function setHeading(heading: number) {
@@ -88,6 +106,11 @@ export function setGpsData(
   currentSpeed = speed
   currentSat = sat
   currentHdop = hdop
+
+  if (currentIsArmed && !homeSet && sat >= 6) {
+    setHome(lat, lon)
+  }
+
 }
 
 export function resetTelemetryState() {
@@ -97,6 +120,9 @@ export function resetTelemetryState() {
   currentNavMode = 0
   loraSendTime = 0
   loraAvgLatency = 0
+  homeLat = 0
+  homeLon = 0
+  homeSet = false
 }
 
 

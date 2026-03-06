@@ -1,9 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.app',
+  appId: 'com.inav.gcs',
   appName: 'INAV-GCS',
-  webDir: 'dist'
+  webDir: 'distAndroid',
+  
 };
 
 export default config;

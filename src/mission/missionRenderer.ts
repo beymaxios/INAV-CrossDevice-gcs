@@ -1,7 +1,11 @@
-import type { MissionType, ActionType } from '../core/types'
+import type { MissionType } from '../core/types'
 import { mission, markers, renumber } from './missionState'
 import { createIcon, updatePolyline } from './missionMap'
 import { validateMission } from '../validation/missionValidator'
+
+/* =========================
+   ICON REFRESH
+========================= */
 
 export function refreshIcons() {
   markers.forEach((marker, i) => {
@@ -10,6 +14,7 @@ export function refreshIcons() {
     }
   })
 }
+
 /* =========================
    RENDER
 ========================= */
@@ -24,74 +29,174 @@ export function renderMissionList() {
     return
   }
 
-  container.innerHTML = mission.map((m, index) => `
-    <div class="wp-row">
+  container.innerHTML = mission.map((m, index) => {
 
-      <div class="wp-header">
-        <strong>#${m.id}</strong>
-        <button data-index="${index}" class="delete-btn">✕</button>
+    return `
+      <div class="wp-row">
+
+        <div class="wp-header">
+          <strong>#${m.id}</strong>
+          <button data-index="${index}" class="delete-btn">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+
+        <div class="wp-field">
+          <label>Type</label>
+          <select data-index="${index}" class="type-select">
+            ${renderTypeOptions(m.type)}
+          </select>
+        </div>
+
+        <div class="wp-field">
+          <label>Altitude (cm)</label>
+          <input type="number"
+            value="${m.alt}"
+            data-index="${index}"
+            class="alt-input"/>
+        </div>
+
+        ${renderTypeSpecificFields(m, index)}
+
       </div>
-      
-      <label>Type</label>
-      <select data-index="${index}" class="type-select">
-        <option value="WAYPOINT" ${m.type === 'WAYPOINT' ? 'selected' : ''}>WAYPOINT</option>
-        <option value="PH_TIME" ${m.type === 'PH_TIME' ? 'selected' : ''}>PH_TIME</option>
-        <option value="POI" ${m.type === 'POI' ? 'selected' : ''}>POI</option>
-        <option value="LAND" ${m.type === 'LAND' ? 'selected' : ''}>LAND</option>
-      </select>
-
-      <label>Altitude (m)</label>
-      <input type="number" value="${m.alt}" data-index="${index}" class="alt-input"/>
-
-      ${m.type === 'WAYPOINT' ? `
-        <label>Speed (m/s)</label>
-        <input type="number" value="${m.speed}" data-index="${index}" class="speed-input"/>
-      ` : ''}
-
-      ${m.type === 'PH_TIME' ? `
-        <label>Hold Time (sec)</label>
-        <input type="number" value="${m.waitTime}" data-index="${index}" class="wait-input"/>
-      ` : ''}
-
-      <div class="action-section">
-        ${
-          m.action
-            ? `
-            <div class="action-label-row">
-              <span>Action</span>
-              <span>P1</span>
-              <span>P2</span>
-              <span></span>
-            </div>
-            <div class="action-row">
-              <select class="action-type" data-index="${index}">
-                <option value="SET_HEAD" ${m.action.type === 'SET_HEAD' ? 'selected' : ''}>SET_HEAD</option>
-                <option value="JUMP" ${m.action.type === 'JUMP' ? 'selected' : ''}>JUMP</option>
-                <option value="RTH" ${m.action.type === 'RTH' ? 'selected' : ''}>RTH</option>
-              </select>
-
-              <input type="number" class="action-p1" data-index="${index}" value="${m.action.p1}" placeholder="P1"/>
-              <input type="number" class="action-p2" data-index="${index}" value="${m.action.p2}" placeholder="P2"/>
-
-              <button class="remove-action" data-index="${index}">
-                ✕
-              </button>
-            </div>
-            `
-            : `
-            <button class="add-action" data-index="${index}">
-              + Add Action
-            </button>
-            `
-        }
-      </div>
-
-    </div>
-  `).join('')
+    `
+  }).join('')
 
   attachListeners()
   renderValidation()
   refreshIcons()
+  updateMapHint()
+}
+
+function updateMapHint() {
+  const hint = document.getElementById('map-hint')
+  if (!hint) return
+
+  hint.style.display = mission.length === 0 ? 'flex' : 'none'
+}
+/* =========================
+   TYPE OPTIONS
+========================= */
+
+function renderTypeOptions(selected: MissionType) {
+
+  const types: MissionType[] = [
+    "WAYPOINT",
+    "PH_TIME",
+    "POI",
+    "LAND",
+    "SET_HEAD",
+    "JUMP",
+    "RTH"
+  ]
+
+  return types.map(t =>
+    `<option value="${t}" ${t === selected ? 'selected' : ''}>${t}</option>`
+  ).join('')
+}
+
+/* =========================
+   TYPE-SPECIFIC FIELDS
+========================= */
+
+function renderTypeSpecificFields(m: any, index: number) {
+
+  switch (m.type) {
+
+    case "WAYPOINT":
+      return `
+        <div class="wp-field">
+          <label>Speed (cm/s)</label>
+          <input type="number"
+            value="${m.p1}"
+            data-index="${index}"
+            class="p1-input"/>
+        </div>
+
+        <div class="wp-field">
+          <label>Level Ref (flag)</label>
+          <input type="number"
+            value="${m.flag}"
+            data-index="${index}"
+            class="flag-input"/>
+        </div>
+      `
+
+    case "PH_TIME":
+      return `
+        <div class="wp-field">
+          <label>Hold Time (sec)</label>
+          <input type="number"
+            value="${m.p1}"
+            data-index="${index}"
+            class="p1-input"/>
+        </div>
+      `
+
+    case "SET_HEAD":
+      return `
+        <div class="wp-field">
+          <label>Heading (deg)</label>
+          <input type="number"
+            value="${m.p1}"
+            data-index="${index}"
+            class="p1-input"/>
+        </div>
+      `
+
+    case "JUMP":
+      return `
+        <div class="wp-field">
+          <label>Jump Target WP</label>
+          <input type="number"
+            value="${m.p1}"
+            data-index="${index}"
+            class="p1-input"/>
+        </div>
+
+        <div class="wp-field">
+          <label>Repeat Count (255 = infinite)</label>
+          <input type="number"
+            value="${m.p2}"
+            data-index="${index}"
+            class="p2-input"/>
+        </div>
+      `
+
+    case "POI":
+      return `
+        <div class="wp-field">
+          <label>POI Param 1</label>
+          <input type="number"
+            value="${m.p1}"
+            data-index="${index}"
+            class="p1-input"/>
+        </div>
+
+        <div class="wp-field">
+          <label>POI Param 2</label>
+          <input type="number"
+            value="${m.p2}"
+            data-index="${index}"
+            class="p2-input"/>
+        </div>
+
+        <div class="wp-field">
+          <label>POI Param 3</label>
+          <input type="number"
+            value="${m.p3}"
+            data-index="${index}"
+            class="p3-input"/>
+        </div>
+      `
+
+    case "RTH":
+    case "LAND":
+      return `<div class="wp-field"><em>No parameters</em></div>`
+
+    default:
+      return ''
+  }
 }
 
 /* =========================
@@ -100,18 +205,28 @@ export function renderMissionList() {
 
 function attachListeners() {
 
+  // DELETE
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', e => {
-      const i = Number((e.target as HTMLElement).dataset.index)
-      mission.splice(i, 1)
-      markers[i].remove()
-      markers.splice(i, 1)
+
+      const index = Number((e.currentTarget as HTMLElement).dataset.index)
+      if (isNaN(index)) return
+
+      const marker = markers[index]
+      if (marker) {
+        marker.remove()
+        markers.splice(index, 1)
+      }
+
+      mission.splice(index, 1)
+
       renumber()
       updatePolyline()
       renderMissionList()
     })
   })
 
+  // TYPE CHANGE
   document.querySelectorAll('.type-select').forEach(sel => {
     sel.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
@@ -120,6 +235,7 @@ function attachListeners() {
     })
   })
 
+  // ALT
   document.querySelectorAll('.alt-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
@@ -127,57 +243,35 @@ function attachListeners() {
     })
   })
 
-  document.querySelectorAll('.speed-input').forEach(inp => {
+  // P1
+  document.querySelectorAll('.p1-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
-      mission[i].speed = parseFloat((e.target as HTMLInputElement).value)
+      mission[i].p1 = parseFloat((e.target as HTMLInputElement).value)
     })
   })
 
-  document.querySelectorAll('.wait-input').forEach(inp => {
+  // P2
+  document.querySelectorAll('.p2-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
-      mission[i].waitTime = parseFloat((e.target as HTMLInputElement).value)
+      mission[i].p2 = parseFloat((e.target as HTMLInputElement).value)
     })
   })
 
-  document.querySelectorAll('.add-action').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = Number((e.target as HTMLElement).dataset.index)
-      mission[i].action = { type: 'SET_HEAD', p1: 0, p2: 0 }
-      renderMissionList()
-    })
-  })
-
-  document.querySelectorAll('.remove-action').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = Number((e.target as HTMLElement).dataset.index)
-      mission[i].action = null
-      renderMissionList()
-    })
-  })
-
-  document.querySelectorAll('.action-type').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const i = Number((e.target as HTMLElement).dataset.index)
-      if (mission[i].action)
-        mission[i].action!.type = (e.target as HTMLSelectElement).value as ActionType
-    })
-  })
-
-  document.querySelectorAll('.action-p1').forEach(inp => {
+  // P3
+  document.querySelectorAll('.p3-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
-      if (mission[i].action)
-        mission[i].action!.p1 = parseFloat((e.target as HTMLInputElement).value)
+      mission[i].p3 = parseFloat((e.target as HTMLInputElement).value)
     })
   })
 
-  document.querySelectorAll('.action-p2').forEach(inp => {
+  // FLAG
+  document.querySelectorAll('.flag-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = Number((e.target as HTMLElement).dataset.index)
-      if (mission[i].action)
-        mission[i].action!.p2 = parseFloat((e.target as HTMLInputElement).value)
+      mission[i].flag = parseFloat((e.target as HTMLInputElement).value)
     })
   })
 }

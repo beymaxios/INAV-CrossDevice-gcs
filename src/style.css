@@ -2,14 +2,21 @@
    GLOBAL
 ===================================================== */
 
-html, body, #app {
+html, body {
   height: 100%;
-  width: 100%;
   margin: 0;
   padding: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
   background: #0f172a;
   color: #fff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* =====================================================
@@ -18,12 +25,28 @@ html, body, #app {
 
 .topbar {
   height: 64px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   background: linear-gradient(90deg, #0b1220, #111c2e);
   border-bottom: 1px solid #1e293b;
+  overflow: hidden;
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
 }
 
 .brand {
@@ -55,7 +78,7 @@ html, body, #app {
 }
 
 /* =====================================================
-   TELEMETRY (INSIDE TOPBAR)
+   TELEMETRY
 ===================================================== */
 
 .telemetry-strip {
@@ -63,6 +86,14 @@ html, body, #app {
   gap: 28px;
   align-items: center;
   pointer-events: none;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.telemetry-strip::-webkit-scrollbar {
+  display: none;
 }
 
 .telemetry-item {
@@ -70,6 +101,7 @@ html, body, #app {
   flex-direction: column;
   align-items: center;
   min-width: 60px;
+  flex-shrink: 0;
 }
 
 .telemetry-top {
@@ -98,6 +130,7 @@ html, body, #app {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 
 .connect-btn {
@@ -107,10 +140,19 @@ html, body, #app {
   border-radius: 8px;
   color: white;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.connect-btn:hover {
+  background: #1d4ed8;
 }
 
 .connect-btn.disconnect {
   background: #b91c1c;
+}
+
+.connect-btn.disconnect:hover {
+  background: #991b1b;
 }
 
 .status-badge {
@@ -134,50 +176,100 @@ html, body, #app {
   box-shadow: 0 0 8px #f44336;
 }
 
+.transport-select {
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-right: 8px;
+  font-size: 13px;
+  height: 32px;
+}
+
 /* =====================================================
-   MAIN DASHBOARD LAYOUT
+   MAIN LAYOUT
 ===================================================== */
+
 .split-container {
   display: flex;
-  height: calc(100vh - 64px);
+  flex: 1;
+  min-height: 0;
   width: 100%;
   position: relative;
   overflow: hidden;
 }
-/* LEFT SIDEBAR */
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
 #sidebar {
   width: 320px;
   background: #111827;
   border-right: 1px solid #1f2937;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-/* MAP AREA */
-#map {
-  flex: 1;
-  height: 100%;
-  width: 100%;
-  z-index: 1;
-  position: relative;
-}
-
-#sidebar {
+  min-height: 0;
   z-index: 2;
+  max-width: 100%;
+  transition: width 0.3s ease, padding 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-.leaflet-container {
-  pointer-events: auto !important;
+.split-container.collapsed #sidebar {
+  width: 0;
+  padding: 0;
+  border-right: none;
 }
+
+.mission-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 16px 16px 10px 16px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.mission-toolbar button {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mission-toolbar button:hover {
+  background: #334155;
+  color: white;
+}
+
+.mission-toolbar i {
+  font-size: 14px;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px 16px;
+}
+
 /* =====================================================
    MISSION UI
 ===================================================== */
+
 .wp-row {
   background: #1e293b;
-  padding: 14px;
-  margin-bottom: 14px;
-  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   box-sizing: border-box;
 }
@@ -191,61 +283,83 @@ html, body, #app {
   font-size: 14px;
 }
 
+.wp-row label {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.wp-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
 
 .wp-row input,
 .wp-row select {
-  width: 100%;
+  width: 110px;
   box-sizing: border-box;
-  padding: 8px;
+  padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid #334155;
   background: #0f172a;
   color: white;
-  margin-bottom: 8px;
-  font-size: 13px;
+  font-size: 12px;
+  margin-bottom: 0;
 }
-
-/* ACTION SECTION */
 
 .action-section {
   margin-top: 8px;
 }
 
-/* TABULAR ACTION ROW */
-
+.action-label-row,
 .action-row {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 40px;
-  gap: 8px;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr 40px;
+  gap: 6px;
   align-items: center;
+}
+
+.action-label-row {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.action-label-row span {
+  text-align: center;
 }
 
 .action-row select,
 .action-row input {
+  width: 100%;
   margin: 0;
 }
 
-/* REMOVE BUTTON */
-
-.remove-action {
-  background: #b91c1c;
+.action-row button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  background: #7f1d1d;
   border: none;
-  border-radius: 6px;
-  color: white;
+  color: #fca5a5;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  height: 36px;
+  transition: all 0.2s ease;
 }
 
-.remove-action:hover {
+.action-row button:hover {
   background: #dc2626;
-   border: none;
   color: white;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
 }
-
-/* ADD ACTION BUTTON */
 
 .add-action {
   width: 100%;
@@ -263,13 +377,6 @@ html, body, #app {
   background: #334155;
 }
 
-/* DELETE WAYPOINT BUTTON */
-
-
-.delete-btn:hover {
-  background: #dc2626;
-}
-
 .delete-btn {
   background: #ef4444;
   border: none;
@@ -279,6 +386,10 @@ html, body, #app {
   border-radius: 6px;
 }
 
+.delete-btn:hover {
+  background: #dc2626;
+}
+
 .validation-box {
   background: #7f1d1d;
   padding: 8px;
@@ -286,86 +397,19 @@ html, body, #app {
   margin-top: 10px;
 }
 
-.action-label-row {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr 0.8fr 40px;
-  font-size: 11px;
-  opacity: 0.6;
-  margin-bottom: 4px;
-  padding: 0 4px;
-}
-
-.action-label-row span {
-  text-align: center;
-}
-
-/* ===== ACTION ROW ===== */
-
-.action-row {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr 0.8fr 40px;
-  gap: 6px;
-  align-items: center;
-}
-
-.action-row select,
-.action-row input {
-  width: 100%;
-}
-
-.action-row button {
-  background: #ef4444;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
 /* =====================================================
-   MOBILE
+   LOG PANEL
 ===================================================== */
 
-@media (max-width: 768px) {
-
-  #sidebar {
-    width: 260px;
-  }
-
-  .telemetry-label {
-    display: none;
-  }
-
-}
-
-
-.map-hint {
-  margin-top: 8px;
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 8px;
-  font-size: 13px;
-  color: #93c5fd;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.9;
-}
-
-.map-hint i {
-  color: #3b82f6;
-  font-size: 14px;
-}
-
 .log-panel {
+  flex-shrink: 0;
   background: #0b1220;
   border-top: 1px solid #1e293b;
   font-family: monospace;
   font-size: 13px;
+  overflow-x: hidden;
 }
 
-/* Single row */
 .log-bar {
   display: flex;
   align-items: center;
@@ -373,23 +417,20 @@ html, body, #app {
   padding: 6px 14px;
 }
 
-/* Left side group */
 .log-left {
   display: flex;
   align-items: center;
   gap: 8px;
   flex: 1;
-  min-width: 0;   /* IMPORTANT prevents wrapping */
+  min-width: 0;
 }
 
-/* Icon */
 .log-icon {
-  color: #60a5fa;
+  color: #22c55e;
   font-size: 14px;
   flex-shrink: 0;
 }
 
-/* Preview text */
 .log-preview {
   color: #94a3b8;
   white-space: nowrap;
@@ -397,7 +438,6 @@ html, body, #app {
   text-overflow: ellipsis;
 }
 
-/* Show/Hide link */
 .log-toggle {
   color: #60a5fa;
   text-decoration: none;
@@ -409,7 +449,6 @@ html, body, #app {
   text-decoration: underline;
 }
 
-/* Log content area */
 .log-content {
   max-height: 160px;
   overflow-y: auto;
@@ -420,67 +459,34 @@ html, body, #app {
   display: none;
 }
 
-.log-entry {
-  margin-bottom: 4px;
-}
-
+.log-entry { margin-bottom: 4px; }
 .log-entry.info { color: #94a3b8; }
 .log-entry.warn { color: #f59e0b; }
 .log-entry.error { color: #ef4444; }
 
+/* =====================================================
+   MAP
+===================================================== */
 
-.log-icon {
-  color: #22c55e;
-}
-
-
-.gps-overlay {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 200px;
-  background: rgba(17, 24, 39, 0.92);
-  backdrop-filter: blur(6px);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: #e5e7eb;
-  border: 1px solid rgba(255,255,255,0.05);
-  z-index: 1000;
-}
-
-
-.gps-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.gps-row span:first-child {
-  color: #9ca3af;
-  text-transform: none;
-}
-
-.gps-compass {
-  margin-top: 14px;
-  height: 80px;
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, #1e293b, #0f172a);
+#map {
+  flex: 1;
+  min-width: 0;
   position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
-.home-dir-icon {
-  color: #22c55e;
-  font-size: 16px;
-  transition: transform 0.15s linear;
+
+.leaflet-container {
+  pointer-events: auto !important;
+  height: 100%;
+  width: 100%;
 }
+
+/* =====================================================
+   STATUS FOOTER
+===================================================== */
 
 .status-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 34px;
   background: #111827;
   color: #ef4444;
@@ -489,93 +495,323 @@ html, body, #app {
   padding: 0 16px;
   font-size: 13px;
   border-top: 1px solid #1f2937;
-  z-index: 9999;
+  flex-shrink: 0;
 }
 
 .status-footer.hidden {
   display: none;
 }
 
+/* =====================================================
+   MOBILE
+===================================================== */
 
-.quad-wrapper {
-  width: 48px;
-  height: 48px;
+@media (max-width: 896px) {
+
+  .topbar {
+    height: 52px;
+    padding: 0 12px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .telemetry-top {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .telemetry-strip {
+    gap: 14px;
+  }
+
+  #sidebar {
+    width: 260px;
+  }
+
+  .telemetry-label {
+    display: none;
+  }
+}
+
+/* =====================================================
+   TOASTS
+===================================================== */
+
+#gcs-toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column-reverse;
+  gap: 10px;
+  align-items: flex-end;
 }
 
-.quad-icon {
-  width: 48px;
-  height: 48px;
-  transform-origin: center center;
-  transition: transform 0.1s linear;
+.gcs-toast {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 240px;
+  max-width: 320px;
+  color: #e6edf3;
+  backdrop-filter: blur(8px);
+  background: rgba(30, 35, 42, 0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  animation: slideIn 0.25s ease-out;
 }
 
-.transport-select {
-  background: #0f172a;
-  color: white;
-  border: 1px solid #334155;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-right: 8px;
+.gcs-toast.success { border-left: 4px solid #2ecc71; }
+.gcs-toast.error { border-left: 4px solid #e74c3c; }
+.gcs-toast.warn { border-left: 4px solid #f1c40f; }
+.gcs-toast.info { border-left: 4px solid #3498db; }
+
+@keyframes slideIn {
+  from { transform: translateY(15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.disabled-btn {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* Default: hidden */
+#gps-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  width: 200px;
+  max-width: 90vw;
+
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  border-radius: 10px;
+  padding: 10px 12px;
+
+  font-size: 12px;
+  color: #e5e7eb;
+
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+
+  z-index: 1000;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+/* When sidebar collapsed → show */
+.split-container.collapsed #gps-overlay {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 
 
-/* Prevent full page horizontal scrolling */
-html, body {
-  overflow-x: hidden;
+#gps-overlay .gps-row span:first-child {
+  color: #9ca3af;
 }
 
-/* Ensure topbar never expands beyond 64px */
-.topbar {
-  overflow: hidden;
+#gps-overlay .gps-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
-
-/* Allow telemetry to scroll internally instead of pushing layout */
-.telemetry-strip {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
+.home-dir-icon {
+  color: #22c55e;
+  font-size: 16px;
+  transition: transform 0.15s linear;
 }
-
-.telemetry-strip::-webkit-scrollbar {
+/* Show GPS only when sidebar is collapsed */
+/* .split-container:not(.collapsed) .gps-overlay {
   display: none;
 }
 
-/* Prevent telemetry items from shrinking oddly */
-.telemetry-item {
+.split-container.collapsed .gps-overlay {
+  display: block;
+} */
+
+.split-container.collapsed #sidebar {
+  width: 0;
+  padding: 0;
+  border-right: none;
+  overflow: hidden;       /* important */
+}
+
+.split-container.collapsed #sidebar * {
+  display: none;          /* ensures no ghost scroll */
+}
+
+#splitter {
+  width: 6px;
   flex-shrink: 0;
+  cursor: col-resize;
+  background: #1f2937;
+  transition: background 0.2s ease;
+  z-index: 3;
+  touch-action: none;
 }
 
-/* Ensure connection group never pushes layout */
-.connection-group {
-  flex-shrink: 0;
+#splitter:hover {
+  background: #334155;
 }
 
-/* Prevent sidebar from forcing horizontal overflow */
-#sidebar {
-  max-width: 100%;
+/* Hide splitter when sidebar collapsed */
+.split-container.collapsed #splitter {
+  display: none;
 }
 
-/* Prevent map from exceeding container */
-#map {
-  max-width: 100%;
+#clearMissionBtn i {
+  color: #ef4444;   /* nice red */
 }
 
-/* Make split container fully stable */
-.split-container {
-  overflow-x: hidden;
+#clearMissionBtn:hover i {
+  color: #dc2626;   /* slightly darker on hover */
+}
+#clearMissionBtn {
+  border-color: #7f1d1d;
 }
 
-/* Fix GPS overlay overflow edge case */
-.gps-overlay {
-  max-width: 90vw;
+#clearMissionBtn:hover {
+  background: #7f1d1d;
+}
+@media (max-width: 896px) {
+
+  .mission-toolbar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mission-toolbar button {
+    flex: 0 0 32px;   /* slightly smaller */
+    width: 32px;
+    height: 32px;
+  }
+
 }
 
-/* Fix potential log overflow */
-.log-panel {
-  overflow-x: hidden;
+/* =====================================================
+   CONFIRM MODAL
+===================================================== */
+
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.confirm-modal.hidden {
+  display: none;
+}
+
+.confirm-box {
+  background: #111827;
+  padding: 20px;
+  width: 320px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.confirm-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.confirm-text {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-actions button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.confirm-actions button:hover {
+  background: #334155;
+}
+
+.confirm-actions .danger {
+  background: #7f1d1d;
+  border-color: #7f1d1d;
+}
+
+.confirm-actions .danger:hover {
+  background: #dc2626;
+}
+
+/* =========================
+   QUAD ARMED GLOW
+========================= */
+/* =========================
+   QUAD STATUS GLOW
+========================= */
+
+.quad-armed {
+  animation: quadPulseGreen 1.2s infinite ease-in-out;
+}
+
+.quad-failsafe {
+  animation: quadPulseRed 0.7s infinite ease-in-out;
+}
+
+@keyframes quadPulseGreen {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(0,255,0,0.0));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(34,197,94,0.9))
+            drop-shadow(0 0 18px rgba(34,197,94,0.6));
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(0,255,0,0.0));
+  }
+}
+
+@keyframes quadPulseRed {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(255,0,0,0.0));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(239,68,68,1))
+            drop-shadow(0 0 22px rgba(239,68,68,0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(255,0,0,0.0));
+  }
+}
+
+.topbar {
+  padding-top: max(env(safe-area-inset-top), 24px);
 }

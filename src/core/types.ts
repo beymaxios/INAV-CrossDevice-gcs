@@ -1,4 +1,13 @@
-export type MissionType = 'WAYPOINT' | 'PH_TIME' | 'POI' | 'LAND'
+export type MissionType =
+  | "WAYPOINT"
+  | "PH_TIME"
+  | "POI"
+  | "LAND"
+  | "SET_HEAD"
+  | "JUMP"
+  | "RTH"
+  | "SET_POI"
+
 export type ActionType = 'SET_HEAD' | 'JUMP' | 'RTH'
 
 export interface MissionAction {
@@ -13,7 +22,8 @@ export interface MissionItem {
   lon: number
   alt: number
   type: MissionType
-  waitTime: number
-  speed: number
-  action?: MissionAction | null
+  p1: number
+  p2: number
+  p3: number
+  flag: number
 }
