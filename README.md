@@ -81,7 +81,29 @@ Uses:
 WebSerial API
 
 No additional hardware required besides the ground LoRa module.
-
+---
+## Telemetry Architecture
+Drone Side
+┌───────────────────────────┐
+│   INAV Flight Controller  │
+└──────────────┬────────────┘
+               │ UART
+               │
+       LoRa-900A (Air Unit)
+               │
+        ~~~~~ RF LINK ~~~~~
+               │
+       LoRa-900A (Ground)
+               │
+        ┌──────┴─────────┐
+        │                │
+      USB             UART
+        │                │
+   Desktop / Android    ESP32
+        │                │
+        │             WiFi
+        │                │
+   INAV GCS App      Browser GCS
 ---
 
 ### Android
