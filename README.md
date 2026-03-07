@@ -15,8 +15,6 @@
 # INAV GCS
 Lightweight Cross-Platform Ground Control Station for **INAV Firmware**
 
-INAV Web GCS is a lightweight cross-platform **Ground Control Station (GCS)** for INAV flight controllers.
-
 It provides a modern **map-based mission planner**, **live telemetry**, and multiple connection methods including **USB**, **LoRa telemetry**, and **WiFi bridges**.
 
 The project is built using modern web technologies and runs on:
