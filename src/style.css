@@ -1,6 +1,8 @@
 /* =====================================================
    GLOBAL
 ===================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;600&display=swap');
+
 
 html, body {
   height: 100%;
@@ -61,18 +63,20 @@ html, body {
 }
 
 .brand-text {
+  font-family: 'Rajdhani', sans-serif;
   display: flex;
   flex-direction: column;
   line-height: 1.1;
 }
 
 .brand-title {
-  font-size: 18px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
   font-weight: 700;
 }
 
 .brand-sub {
-  font-size: 10px;
+  font-size: 12px;
   color: #94a3b8;
   letter-spacing: 2px;
 }
@@ -507,10 +511,10 @@ html, body {
 ===================================================== */
 
 @media (max-width: 896px) {
-
+  
   .topbar {
     height: 52px;
-    padding: 0 12px;
+     padding-top: max(env(safe-area-inset-top), 24px);
   }
 
   .brand-text {
@@ -810,8 +814,4 @@ html, body {
   100% {
     filter: drop-shadow(0 0 0px rgba(255,0,0,0.0));
   }
-}
-
-.topbar {
-  padding-top: max(env(safe-area-inset-top), 24px);
 }

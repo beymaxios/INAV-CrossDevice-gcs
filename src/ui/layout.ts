@@ -15,8 +15,8 @@ export function renderLayout() {
   <div class="brand">
     <img src="/logo.png" class="brand-logo" />
     <div class="brand-text">
-      <span class="brand-title">INAV</span>
-      <span class="brand-sub">WEB GROUND CONTROL STATION</span>
+      <span class="brand-title">FLIGHT GUIDE</span>
+      <span class="brand-sub">GROUND CONTROL STATION FOR INAV</span>
     </div>
   </div>
  </div>

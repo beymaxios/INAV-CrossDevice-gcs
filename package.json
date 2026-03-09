@@ -1,12 +1,13 @@
 {
-  "name": "inav-web-gcs",
+  "name": "flight-guide",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
    "build:desktop": "vite build",
    "build:esp32": "vite build --config vite.esp32.config.ts",
-   "build:android": "vite build --config vite.android.config.ts"
+   "build:android": "vite build --config vite.android.config.ts",
+    "dev": "vite"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
